@@ -150,3 +150,48 @@ paths:
                   - refresh_token
                   - expires_in
                   - refresh_expires_in
+  /auth/realms/{realm_name}/protocol/openid-connect/token/introspect:
+    post:
+      tags:
+        - auth
+      summary: получить информацию по access_token (в частности проверить срок его жизни TTL) 
+      parameters:
+        - name: realm_name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                  description:  Идентификатор клиента в реалме
+                client_secret:
+                  type: string
+                  description: Значения секрета клиента в реалме
+                token:
+                  type: string
+                  description: Значение кода, который вернулся на callback после авторизации
+              required:
+                - client_id
+                - client_secret
+                - token
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                description: JWT токен
+                properties:
+                  active:
+                    type: boolean
+                  ...:
+                    type: string
+                required:
+                  - active
