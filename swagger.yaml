@@ -12,19 +12,6 @@ tags:
       description: oauth2 docs
       url: https://datatracker.ietf.org/doc/html/rfc6749
 paths:
-  /auth/callback:
-    get:
-      tags:
-        - auth
-      summary: callback для авторизации
-      description: fsf
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: string   
   /auth/realms/{realm_name}/protocol/openid-connect/auth:
     get:
       tags:
@@ -74,20 +61,92 @@ paths:
       responses:
         '200':
           description: HTML страница авторизации
-  /auth/realms/{realmName}/protocol/openid-connect/auth2:
-    post:
+  /auth/callback:
+    get:
       tags:
         - auth
-      parameters:
-        - name: realmName
-          in: path
-          required: true
-          schema:
-            type: string
+      summary: callback для авторизации
+      description: Сюда будут прокинуты значения авторизационного кода, выпущенного в процессе авторизации, который нужно использовать для получения access и refresh токенов
       responses:
         '200':
           description: Successful operation
           content:
             application/json:
               schema:
-                type: string   
+                type: string  
+                example: URI https://${host}/auth/callback?state=xyzq&session_state=be5c99c4-dd97-4975-ba0b-d7e34d6dfed3&iss=https%3A%2F%2Fhost.ru%2Fauth%2Frealms%2FrealmName&code=7d24debf-b69e-11f.be5c99c4-dd97-42
+  /auth/realms/{realm_name}/protocol/openid-connect/token:
+    post:
+      tags:
+        - auth
+      summary: обменять authorization_code на access и refresh токены 
+      parameters:
+        - name: realm_name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                  description:  Идентификатор клиента в реалме
+                client_secret:
+                  type: string
+                  description: Значения секрета клиента в реалме
+                code:
+                  type: string
+                  description: Значение кода, который вернулся на callback после авторизации
+                grant_type:
+                  type: string
+                  enum: [authorization_code]
+                  description: Значение authorization_code
+                redirect_uri:
+                  type: string
+                  description: callback куда будет возвращен access и refresh токены
+                code_verifier:
+                  type: string
+                  description: Ключ для сервера авторизации, который не позволит получить токен доступа стороннему приложению (для безопасности)
+              required:
+                - client_id
+                - client_secret
+                - code
+                - grant_type
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  access_token:
+                    type: string
+                    example: sfsfafagaga
+                  expires_in:
+                    type: integer
+                    example: 60
+                  refresh_token:
+                    type: string
+                    example: sasfasfafasf
+                  refresh_expires_in:
+                    type: integer
+                    example: 1800
+                  token_type:
+                    type: string
+                    example: Bearer
+                  not-before-policy:
+                    type: integer
+                    example: 0
+                  session_state:
+                    type: string
+                    example: skaokfoakfoakfsofq
+                required:
+                  - access_token
+                  - refresh_token
+                  - expires_in
+                  - refresh_expires_in
