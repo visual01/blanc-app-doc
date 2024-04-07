@@ -81,7 +81,11 @@ paths:
     post:
       tags:
         - auth
-      summary: обменять authorization_code на access и refresh токены 
+      summary: Получить access/refrseh токены
+      description: '
+        1.Обменять authorization_code на access и refresh токены <br>
+        2.Обменять refresh токен на новый access токен
+      ' 
       parameters:
         - name: realm_name
           in: path
@@ -94,6 +98,10 @@ paths:
             schema:
               type: object
               properties:
+                grant_type:
+                  type: string
+                  enum: [authorization_code, refresh_token]
+                  description: Значение authorization_code ИЛИ refresh_token
                 client_id:
                   type: string
                   description:  Идентификатор клиента в реалме
@@ -102,11 +110,10 @@ paths:
                   description: Значения секрета клиента в реалме
                 code:
                   type: string
-                  description: Значение кода, который вернулся на callback после авторизации
-                grant_type:
+                  description: Значение кода, который вернулся на callback после авторизации. Передавать только для grant_type = authorization_code
+                refresh_token:
                   type: string
-                  enum: [authorization_code]
-                  description: Значение authorization_code
+                  description: Токен обновления. Передавать только для grant_type = refresh_token
                 redirect_uri:
                   type: string
                   description: callback куда будет возвращен access и refresh токены
@@ -116,7 +123,6 @@ paths:
               required:
                 - client_id
                 - client_secret
-                - code
                 - grant_type
       responses:
         '200':
@@ -257,7 +263,7 @@ paths:
     post:
       tags:
         - backend
-      summary: Прикрепить код приглашения к аккаунту ()активировать подписку)
+      summary: Прикрепить код приглашения к аккаунту (активировать подписку)
       description: '
         **Логика работы** <br>
         1.Необходимо проверить, что access_token не протух <br>
