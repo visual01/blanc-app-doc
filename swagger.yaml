@@ -220,10 +220,12 @@ paths:
                   type: string
                   description:  Идентификатор пользователя
                   nullable: false
+                  example: 123
                 access_token:
                   type: string
                   description: Токен доступа
                   nullable: false
+                  example: "aisjifi81jd"
               required:
                 - user_id
                 - access_token
@@ -238,15 +240,86 @@ paths:
                   user_id:
                     type: string
                     example: 123
+                    nullable: false
                   is_active_subscription:
                     type: boolean
                     example: false
+                    nullable: false
                   exprire_time:
                     type: string
                     format: datetime
+                    nullable: true
                     example: '2024-04-07T07:51:15+00:00'
                 required:
-                  - access_token
-                  - refresh_token
-                  - expires_in
-                  - refresh_expires_in
+                  - user_id
+                  - is_active_subscription
+  /invite-code:
+    post:
+      tags:
+        - backend
+      summary: Прикрепить код приглашения к аккаунту ()активировать подписку)
+      description: '
+        **Логика работы** <br>
+        1.Необходимо проверить, что access_token не протух <br>
+        1.1. Если access_token протух, то необходимо вернуть ответ со status_code = 401 <br>
+        1.2. Если access_token не протух, то необходимо перейти на шаг 3 <br>
+        2.Необходимо проверить что в БД есть переданный пользователем код (поле code) и что он не был использован ранее <br>
+        3.1. Код есть и не был использован ранее, то TBD <br>
+        3.2. Код есть, но был использован ранее, то TBD <br>
+        3.3. Кода нет, то TBD <br>
+        4. Вернуть ответ <br>
+      '
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  description:  Идентификатор пользователя
+                  nullable: false
+                  example: 123
+                access_token:
+                  type: string
+                  description: Токен доступа
+                  nullable: false
+                  example: "aisjifi81jd"
+                invite_code:
+                  type: string
+                  description: Код приглашения
+                  nullable: false
+                  example: "98765431"
+              required:
+                - user_id
+                - access_token
+                - invite_code
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    example: 123
+                    nullable: false
+                  is_code_verified:
+                    type: boolean
+                    example: false
+                    nullable: false
+                  attempts:
+                    type: integer
+                    example: 3
+                    nullable: false
+                  text:
+                    type: string
+                    example: Осталось 3 попытки
+                    nullable: false
+                required:
+                  - user_id
+                  - is_code_verified
+                  - attempts
+                  - text
