@@ -203,6 +203,45 @@ paths:
                     type: string
                 required:
                   - active
+  /auth/realms/{realm_name}/protocol/openid-connect/logout:
+    post:
+      tags:
+        - auth
+      summary: разлогин (удалить сессию пользователя)
+      parameters:
+        - name: realm_name
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                client_id:
+                  type: string
+                  description:  Идентификатор клиента в реалме
+                client_secret:
+                  type: string
+                  description: Значения секрета клиента в реалме
+                refresh_token:
+                  type: string
+                  description: Токен обновления
+              required:
+                - client_id
+                - client_secret
+                - refresh_token
+      responses:
+        '204':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                example: null
+
   /check-subscription:
     post:
       tags:
