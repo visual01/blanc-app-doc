@@ -241,9 +241,8 @@ paths:
               schema:
                 type: object
                 example: null
-
   /check-subscription:
-    post:
+    get:
       tags:
         - backend
       summary: Проверить активна ли подписка пользователя
@@ -255,25 +254,13 @@ paths:
         2. Необходимо проверить есть активная подписка, поле в БД TBD <br>
         3. Вернуть ответ
       '
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                user_id:
-                  type: string
-                  description:  Идентификатор пользователя
-                  nullable: false
-                  example: 123
-                access_token:
-                  type: string
-                  description: Токен доступа
-                  nullable: false
-                  example: "aisjifi81jd"
-              required:
-                - user_id
-                - access_token
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          example: ${access token}
       responses:
         '200':
           description: Successful operation
@@ -282,10 +269,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  user_id:
-                    type: string
-                    example: 123
-                    nullable: false
                   is_active_subscription:
                     type: boolean
                     example: false
@@ -296,9 +279,8 @@ paths:
                     nullable: true
                     example: '2024-04-07T07:51:15+00:00'
                 required:
-                  - user_id
                   - is_active_subscription
-  /invite-code:
+  /invite-code/{code}:
     post:
       tags:
         - backend
@@ -314,31 +296,19 @@ paths:
         3.3. Кода нет, то TBD <br>
         4. Вернуть ответ <br>
       '
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                user_id:
-                  type: string
-                  description:  Идентификатор пользователя
-                  nullable: false
-                  example: 123
-                access_token:
-                  type: string
-                  description: Токен доступа
-                  nullable: false
-                  example: "aisjifi81jd"
-                invite_code:
-                  type: string
-                  description: Код приглашения
-                  nullable: false
-                  example: "98765431"
-              required:
-                - user_id
-                - access_token
-                - invite_code
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          example: ${access token}
+        - in: path
+          name: code
+          schema:
+            type: string
+          required: true
+          example: ${access token}
       responses:
         '200':
           description: Successful operation
@@ -347,10 +317,6 @@ paths:
               schema:
                 type: object
                 properties:
-                  user_id:
-                    type: string
-                    example: 123
-                    nullable: false
                   is_code_verified:
                     type: boolean
                     example: false
@@ -364,7 +330,146 @@ paths:
                     example: Осталось 3 попытки
                     nullable: false
                 required:
-                  - user_id
                   - is_code_verified
                   - attempts
                   - text
+  /medical-liability-confirmation:
+    post:
+      tags:
+        - backend
+      summary: Принятие согласия об отсутствии медицинской ответственности
+      description: '
+        TBD
+      '
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          example: ${access token}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+               accepted_medical_liablility:
+                  type: boolean
+                  description: Согласие об отсутствии медицинской ответственности принятно
+                  nullable: false
+                  example: true
+              required:
+                - accepted_medical_liablility
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                example: null
+  /user-data:
+    get:
+      tags:
+        - backend
+      summary: Получить данные пользователя
+      description: 'TBD'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          example: ${access token}
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: string  
+                example: f
+    put:
+      tags:
+        - backend
+      summary: Создать/обновить данные пользователя
+      description: '
+        TBD
+      '
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          example: ${access token}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                access_token:
+                  type: string
+                  description: Токен доступа
+                  nullable: false
+                  example: "aisjifi81jd"
+                accepted_medical_liablility:
+                  type: boolean
+                  description: Согласие об отсутствии медицинской ответственности принятно
+                  nullable: false
+                  example: true
+              required:
+                - access_token
+                - invite_code
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                example: null
+  /parent-playlist:
+    get:
+      tags:
+        - backend
+      summary: Получить родительский playlist
+      description: 'TBD'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          example: ${access token}
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: string  
+                example: f
+  /child-playlist:
+    get:
+      tags:
+        - backend
+      summary: Получить дочерний playlist (определенного качества)
+      description: 'TBD'
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+          example: ${access token}
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: string  
+                example: f
