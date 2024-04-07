@@ -388,8 +388,72 @@ paths:
           content:
             application/json:
               schema:
-                type: string  
-                example: f
+                type: object  
+                properties:
+                  age:
+                    type: integer
+                    example: 33
+                    nullable: true
+                  gender:
+                    type: object
+                    nullable: false
+                    properties:
+                      value:
+                        type: string
+                        enum: [MALE, FEMALE]
+                        example: MALE
+                        nullable: false
+                      display_name:
+                        type: string
+                        nullable: false
+                        example: мужчина
+                    required:
+                      - value
+                      - display_name
+                  weight:
+                    type: object
+                    nullable: false
+                    properties:
+                      value:
+                        type: number
+                        format: float
+                        example: 73.3
+                        nullable: false
+                      unit:
+                        type: string
+                        format: enum
+                        enum: ['KG']
+                        nullable: false
+                      display_name:
+                        type: string
+                        example: кг
+                        nullable: false
+                    required:
+                      - value
+                      - unit
+                      - display_name
+                  height:
+                    type: object
+                    nullable: false
+                    properties:
+                      value:
+                        type: number
+                        format: float
+                        nullable: false
+                        example: 173.2
+                      unit:
+                        type: string
+                        enum: ["SM"]
+                        nullable: false
+                        example: SM
+                      display_name:
+                        type: string
+                        nullable: false
+                        example: см
+                    required:
+                      - value
+                      - unit
+                      - display_name
     put:
       tags:
         - backend
