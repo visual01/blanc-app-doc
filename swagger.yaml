@@ -11,6 +11,8 @@ tags:
     externalDocs:
       description: oauth2 docs
       url: https://datatracker.ietf.org/doc/html/rfc6749
+  - name: backend
+    description: all about backend methods
 paths:
   /auth/realms/{realm_name}/protocol/openid-connect/auth:
     get:
@@ -195,3 +197,56 @@ paths:
                     type: string
                 required:
                   - active
+  /check-subscription:
+    post:
+      tags:
+        - backend
+      summary: Проверить активна ли подписка пользователя
+      description: '
+        **Логика работы** <br>
+        1. Необходимо проверить, что access_token не протух <br>
+        1.1. Если access_token протух, то необходимо вернуть ответ со status_code = 401 <br>
+        1.2. Если access_token не протух, то необходимо перейти на шаг 3 <br>
+        2. Необходимо проверить есть активная подписка, поле в БД TBD <br>
+        3. Вернуть ответ
+      '
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_id:
+                  type: string
+                  description:  Идентификатор пользователя
+                  nullable: false
+                access_token:
+                  type: string
+                  description: Токен доступа
+                  nullable: false
+              required:
+                - user_id
+                - access_token
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user_id:
+                    type: string
+                    example: 123
+                  is_active_subscription:
+                    type: boolean
+                    example: false
+                  exprire_time:
+                    type: string
+                    format: datetime
+                    example: '2024-04-07T07:51:15+00:00'
+                required:
+                  - access_token
+                  - refresh_token
+                  - expires_in
+                  - refresh_expires_in
