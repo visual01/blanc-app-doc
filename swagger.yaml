@@ -241,48 +241,69 @@ paths:
               schema:
                 type: object
                 example: null
-  /check-subscription:
-    get:
+  /auth/admin/realms/{realm_name}/users/{user_id}:
+    put:
       tags:
-        - backend
-      summary: Проверить активна ли подписка пользователя
-      description: '
-        **Логика работы** <br>
-        1. Необходимо проверить, что access_token не протух <br>
-        1.1. Если access_token протух, то необходимо вернуть ответ со status_code = 401 <br>
-        1.2. Если access_token не протух, то необходимо перейти на шаг 3 <br>
-        2. Необходимо проверить есть активная подписка, поле в БД TBD <br>
-        3. Вернуть ответ
-      '
+        - auth
+      summary: Обновить аттрибуты пользователя (если передан 1 аттрибут, ранее запианные будут удалены)
       parameters:
-        - in: header
-          name: Authorization
-          description: Токен доступа пользователя
+        - name: realm_name
+          in: path
+          required: true
           schema:
             type: string
+        - name: user_id
+          in: path
           required: true
-          example: Bearer ${access token}
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attributes:
+                  type: object
+                  properties:
+                    sex:
+                      type: string
+                      description:  Пол пользователя. Доступные значения [MALE, FEMALE]
+                      example: MALE
+                    weight:
+                      type: number
+                      format: float
+                      description: Вес пользователя
+                      example: 79.4
+                    height:
+                      type: number
+                      format: float
+                      description: Рост пользователя
+                      example: 179
+                    age:
+                      type: number
+                      format: integer
+                      description: Возраст пользователя
+                      example: 27
+                    accepted_no_medical_liability:
+                      type: boolean
+                      description: Пользователь согласился с условием отказа от медицинской ответственности
+                    is_active_subscription:
+                      type: boolean
+                      description: Есть ли активная подписка
+                    subscription_expire_time:
+                      type: string
+                      format: datetime
+                      nullable: true
+                      example: '2024-04-07T07:51:15+00:00'
       responses:
-        '200':
+        '204':
           description: Successful operation
           content:
             application/json:
               schema:
                 type: object
-                properties:
-                  is_active_subscription:
-                    type: boolean
-                    example: false
-                    nullable: false
-                  exprire_time:
-                    type: string
-                    format: datetime
-                    nullable: true
-                    example: '2024-04-07T07:51:15+00:00'
-                required:
-                  - is_active_subscription
-      security:
-        - auth_token: [] 
+                example: null
   /invite-code/{code}:
     post:
       tags:
@@ -379,93 +400,6 @@ paths:
       security:
         - auth_token: [] 
   /user-data:
-    get:
-      tags:
-        - backend
-      summary: Получить данные пользователя
-      description: 'TBD'
-      parameters:
-        - in: header
-          name: Authorization
-          description: Токен доступа пользователя
-          schema:
-            type: string
-          required: true
-          example: Bearer ${access token}
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object  
-                properties:
-                  age:
-                    type: integer
-                    example: 33
-                    nullable: true
-                  gender:
-                    type: object
-                    nullable: false
-                    properties:
-                      value:
-                        type: string
-                        enum: [MALE, FEMALE]
-                        example: MALE
-                        nullable: false
-                      display_name:
-                        type: string
-                        nullable: false
-                        example: мужчина
-                    required:
-                      - value
-                      - display_name
-                  weight:
-                    type: object
-                    nullable: false
-                    properties:
-                      value:
-                        type: number
-                        format: float
-                        example: 73.3
-                        nullable: false
-                      unit:
-                        type: string
-                        format: enum
-                        enum: ['KG']
-                        nullable: false
-                      display_name:
-                        type: string
-                        example: кг
-                        nullable: false
-                    required:
-                      - value
-                      - unit
-                      - display_name
-                  height:
-                    type: object
-                    nullable: false
-                    properties:
-                      value:
-                        type: number
-                        format: float
-                        nullable: false
-                        example: 173.2
-                      unit:
-                        type: string
-                        enum: ["SM"]
-                        nullable: false
-                        example: SM
-                      display_name:
-                        type: string
-                        nullable: false
-                        example: см
-                    required:
-                      - value
-                      - unit
-                      - display_name
-      security:
-        - auth_token: [] 
     put:
       tags:
         - backend
@@ -487,12 +421,7 @@ paths:
             schema:
               type: object
               properties:
-                access_token:
-                  type: string
-                  description: Токен доступа
-                  nullable: false
-                  example: "aisjifi81jd"
-                accepted_medical_liablility:
+                accepted_no_medical_liablility:
                   type: boolean
                   description: Согласие об отсутствии медицинской ответственности принятно
                   nullable: false
