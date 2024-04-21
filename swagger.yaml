@@ -530,9 +530,37 @@ paths:
             schema:
               type: object
               properties:
-                attr1:
+                training_duration:
+                  type: number
+                  format: integer
+                  minimum: 10
+                  maximum: 120
+                training_type:
                   type: string
-                  description: description  
+                  example: TBD
+                  description: Вид тренировки
+                training_complexity:
+                  type: string
+                  example: TBD
+                  description: Сложность тренировки
+                training_hitch:
+                  type: string
+                  example: TBD
+                  description: Заминка
+                body_part_exceptions:
+                  type: array
+                  description: Части тела на которые не нужно возвращать упражнения
+                  items:
+                    type: string
+                    example: TBD
+                warm_up:
+                  type: string
+                  example: TBD
+                  description: Разминка
+              required:
+                - training_duration
+                - training_type
+                - training_complexity
       responses:
         '200':
           description: Successful operation
