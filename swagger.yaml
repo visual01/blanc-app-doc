@@ -280,6 +280,8 @@ paths:
                     example: '2024-04-07T07:51:15+00:00'
                 required:
                   - is_active_subscription
+      security:
+        - auth_token: [] 
   /invite-code/{code}:
     post:
       tags:
@@ -333,6 +335,8 @@ paths:
                   - is_code_verified
                   - attempts
                   - text
+      security:
+        - auth_token: [] 
   /medical-liability-confirmation:
     post:
       tags:
@@ -369,6 +373,8 @@ paths:
               schema:
                 type: object
                 example: null
+      security:
+        - auth_token: [] 
   /user-data:
     get:
       tags:
@@ -454,6 +460,8 @@ paths:
                       - value
                       - unit
                       - display_name
+      security:
+        - auth_token: [] 
     put:
       tags:
         - backend
@@ -495,6 +503,8 @@ paths:
               schema:
                 type: object
                 example: null
+      security:
+        - auth_token: [] 
   /parent-playlist:
     get:
       tags:
@@ -515,7 +525,9 @@ paths:
             application/json:
               schema:
                 type: string  
-                example: f
+                $ref: '#/components/schemas/parentPlayListResponse'
+      security:
+        - auth_token: [] 
   /child-playlist:
     get:
       tags:
@@ -533,7 +545,51 @@ paths:
         '200':
           description: Successful operation
           content:
-            application/json:
+            application/vnd.apple.mpegurl:
               schema:
                 type: string  
-                example: f
+                $ref: '#/components/schemas/childPlaylistResponse'
+            audio/mpegurl:
+              schema:
+                type: string  
+                $ref: '#/components/schemas/childPlaylistResponse'
+      security:
+        - auth_token: [] 
+components:
+  schemas:
+    childPlaylistResponse:
+      type: string
+      example: | 
+        #EXTM3U
+        #EXT-X-VERSION:3
+        #EXT-X-TARGETDURATION:10
+        #EXT-X-MEDIA-SEQUENCE:0
+        #EXT-X-PLAYLIST-TYPE:VOD
+        #EXTINF:6.006400,
+        https://yandex.ru/360/exercise1001.ts
+        #EXTINF:6.006400,
+        https://yandex.ru/360/exercise1002.ts
+        #EXTINF:6.006400,
+        https://yandex.ru/360/exercise2001.ts
+        #EXTINF:6.006400,
+        https://yandex.ru/360/exercise1004.ts
+        #EXT-X-ENDLIST
+    parentPlayListResponse:
+      type: string
+      example: |
+        ff
+  securitySchemes:
+    auth_token:
+      type: oauth2
+      flows:
+        authorizationCode:
+          authorizationUrl: /auth/realms/{realm_name}/protocol/openid-connect/auth
+          tokenUrl: /auth/realms/{realm_name}/protocol/openid-connect/token
+          scopes: {}
+    api_key:
+      type: apiKey
+      name: api_key
+      in: header
+security:
+  - api_key: []
+    
