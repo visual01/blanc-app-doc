@@ -257,6 +257,7 @@ paths:
       parameters:
         - in: header
           name: Authorization
+          description: Токен доступа пользователя
           schema:
             type: string
           required: true
@@ -301,6 +302,7 @@ paths:
       parameters:
         - in: header
           name: Authorization
+          description: Токен доступа пользователя
           schema:
             type: string
           required: true
@@ -348,6 +350,7 @@ paths:
       parameters:
         - in: header
           name: Authorization
+          description: Токен доступа пользователя
           schema:
             type: string
           required: true
@@ -384,6 +387,7 @@ paths:
       parameters:
         - in: header
           name: Authorization
+          description: Токен доступа пользователя
           schema:
             type: string
           required: true
@@ -472,6 +476,7 @@ paths:
       parameters:
         - in: header
           name: Authorization
+          description: Токен доступа пользователя
           schema:
             type: string
           required: true
@@ -506,7 +511,7 @@ paths:
       security:
         - auth_token: [] 
   /parent-playlist:
-    get:
+    post:
       tags:
         - backend
       summary: Получить родительский playlist
@@ -514,18 +519,30 @@ paths:
       parameters:
         - in: header
           name: Authorization
+          description: Токен доступа пользователя
           schema:
             type: string
           required: true
           example: Bearer ${access token}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                attr1:
+                  type: string
+                  description: description  
       responses:
         '200':
           description: Successful operation
           content:
-            application/json:
+            application/vnd.apple.mpegurl:
               schema:
-                type: string  
                 $ref: '#/components/schemas/parentPlayListResponse'
+            audio/mpegurl:
+              schema:
+                 $ref: '#/components/schemas/parentPlayListResponse'
       security:
         - auth_token: [] 
   /child-playlist:
@@ -605,8 +622,18 @@ components:
         #EXT-X-ENDLIST
     parentPlayListResponse:
       type: string
+      description: Содержит ссылки на плейллисты с разным качеством видео
       example: |
-        ff
+        #EXTM3U 
+        #EXT-X-MEDIA:TYPE=AUDIO,GROUP-ID="audio",LANGUAGE="ru",NAME="russian",AUTOSELECT=YES, DEFAULT=YES,URI="https://backendIP/v0/slave-playlist?content=1,2,3,4,5,6,7,8&type=AUDIO"
+        #EXT-X-STREAM-INF:BANDWIDTH=400000,RESOLUTION=640x358,CODECS="avc1.42e00a,mp4a.40.2",AUDIO="audio"
+        https://backendIP/v0/slave-playlist?content=1,2,3,4,5,6,7,8&type=VIDEO&q=360
+        #EXT-X-STREAM-INF:BANDWIDTH=800000,RESOLUTION=858x482,CODECS="avc1.42e00a,mp4a.40.2",AUDIO="audio"
+        https://backendIP/v0/slave-playlist?content=1,2,3,4,5,6,7,8&type=VIDEO&q=480
+        #EXT-X-STREAM-INF:BANDWIDTH=2000000,RESOLUTION=1280x720,CODECS="avc1.42e00a,mp4a.40.2",AUDIO="audio"
+        https://backendIP/v0/slave-playlist?content=1,2,3,4,5,6,7,8&type=VIDEO&q=720
+        #EXT-X-STREAM-INF:BANDWIDTH=3000000,RESOLUTION=1920x1080,CODECS="avc1.42e00a,mp4a.40.2",AUDIO="audio"
+        https://backendIP/v0/slave-playlist?content=1,2,3,4,5,6,7,8&type=VIDEO&q=1080
   securitySchemes:
     auth_token:
       type: oauth2
@@ -615,10 +642,10 @@ components:
           authorizationUrl: /auth/realms/{realm_name}/protocol/openid-connect/auth
           tokenUrl: /auth/realms/{realm_name}/protocol/openid-connect/token
           scopes: {}
-    api_key:
+    x_api_key:
       type: apiKey
       name: api_key
       in: header
 security:
-  - api_key: []
+  - x_api_key: []
     
