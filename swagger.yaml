@@ -260,7 +260,7 @@ paths:
           schema:
             type: string
           required: true
-          example: ${access token}
+          example: Bearer ${access token}
       responses:
         '200':
           description: Successful operation
@@ -304,7 +304,7 @@ paths:
           schema:
             type: string
           required: true
-          example: ${access token}
+          example: Bearer ${access token}
         - in: path
           name: code
           schema:
@@ -351,7 +351,7 @@ paths:
           schema:
             type: string
           required: true
-          example: ${access token}
+          example: Bearer ${access token}
       requestBody:
         content:
           application/json:
@@ -387,7 +387,7 @@ paths:
           schema:
             type: string
           required: true
-          example: ${access token}
+          example: Bearer ${access token}
       responses:
         '200':
           description: Successful operation
@@ -475,7 +475,7 @@ paths:
           schema:
             type: string
           required: true
-          example: ${access token}
+          example: Bearer ${access token}
       requestBody:
         content:
           application/json:
@@ -517,7 +517,7 @@ paths:
           schema:
             type: string
           required: true
-          example: ${access token}
+          example: Bearer ${access token}
       responses:
         '200':
           description: Successful operation
@@ -540,18 +540,46 @@ paths:
           schema:
             type: string
           required: true
-          example: ${access token}
+          example: Bearer ${access token}
+        - in: query
+          name: q
+          description: качество видео
+          schema:
+            type: number
+            format: integer
+            enum:
+              - 360
+              - 480
+              - 720
+              - 1080
+          required: true
+        - in: query
+          name: type
+          description: тип содержимого плейлиста
+          schema:
+            type: string
+            enum:
+              - VIDEO
+              - AUDIO
+          required: true
+        - in: query
+          name: content
+          description: идентификаторы записей
+          schema:
+            type: array
+            items:
+              type: number
+              format: integer
+          required: true
       responses:
         '200':
           description: Successful operation
           content:
             application/vnd.apple.mpegurl:
               schema:
-                type: string  
                 $ref: '#/components/schemas/childPlaylistResponse'
             audio/mpegurl:
               schema:
-                type: string  
                 $ref: '#/components/schemas/childPlaylistResponse'
       security:
         - auth_token: [] 
@@ -559,6 +587,7 @@ components:
   schemas:
     childPlaylistResponse:
       type: string
+      description: Содержит ссылки на сегменты в s3 хранилище
       example: | 
         #EXTM3U
         #EXT-X-VERSION:3
