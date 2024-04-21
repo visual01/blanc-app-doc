@@ -297,13 +297,46 @@ paths:
                       nullable: true
                       example: '2024-04-07T07:51:15+00:00'
       responses:
-        '204':
+        '200':
           description: Successful operation
           content:
             application/json:
               schema:
                 type: object
-                example: null
+                properties:
+                  attributes:
+                    type: object
+                    properties:
+                      sex:
+                        type: string
+                        description:  Пол пользователя. Доступные значения [MALE, FEMALE]
+                        example: MALE
+                      weight:
+                        type: number
+                        format: float
+                        description: Вес пользователя
+                        example: 79.4
+                      height:
+                        type: number
+                        format: float
+                        description: Рост пользователя
+                        example: 179
+                      age:
+                        type: number
+                        format: integer
+                        description: Возраст пользователя
+                        example: 27
+                      accepted_no_medical_liability:
+                        type: boolean
+                        description: Пользователь согласился с условием отказа от медицинской ответственности
+                      is_active_subscription:
+                        type: boolean
+                        description: Есть ли активная подписка
+                      subscription_expire_time:
+                        type: string
+                        format: datetime
+                        nullable: true
+                        example: '2024-04-07T07:51:15+00:00'
   /invite-code/{code}:
     post:
       tags:
@@ -311,14 +344,25 @@ paths:
       summary: Прикрепить код приглашения к аккаунту (активировать подписку)
       description: '
         **Логика работы** <br>
-        1.Необходимо проверить, что access_token не протух <br>
-        1.1. Если access_token протух, то необходимо вернуть ответ со status_code = 401 <br>
-        1.2. Если access_token не протух, то необходимо перейти на шаг 3 <br>
-        2.Необходимо проверить что в БД есть переданный пользователем код (поле code) и что он не был использован ранее <br>
-        3.1. Код есть и не был использован ранее, то TBD <br>
-        3.2. Код есть, но был использован ранее, то TBD <br>
-        3.3. Кода нет, то TBD <br>
-        4. Вернуть ответ <br>
+        1.Необходимо получить данные (проверить валидность) о токене пользователя POST /auth/realms/{realm_name}/protocol/openid-connect/token/introspect <br>
+        1.1. Если параметр "active" = true, то access_token НЕ протух, перейти на шаг 2 <br>
+        1.2. Если параетр "acrive"= false или status_code ответа != 200, то вернуть  то необходимо вернуть ответ со status_code = 401. <br>
+        2.Необходимо получить идентификатор пользователя из запроса 1, поле sub и проверить что  текущего пользователя есть доступные попытки ввода "кода приглашения" (ищем по колонке user_id, проверяем поле amount_left <br>
+        2.1. Если пользователь не найден, то записываем его в БД указывая user_id, amount_left = 2, и в поле last_try текущую дату и время, переходим на шаг 3
+        2.2. Если пользователь найден, и значение amount_left = 0, то необходимо проверить сколько времени прошло с последней попытки (поле last_try) <br>
+        2.2.1. Если прошло час или более, то необходимо сбросить кол-во попыток (как если бы пользователь не был найден) то перейти на шаг 2.1.
+        на в БД attempt имеется пользователь (user_id) <br>
+        2.2.2. Если прошло меньше часа, то вернуть пользователю ответ со status_code 200, когда будет доступна следующая попытка { "attempts": 0,"text": "Осталось 3 попытки", "next_try": "2024-04-07T07:51:15+00:00"}. Следующие 3 попытки доступны через час после последней.
+        Необходимо проверить что в БД в таблице invite_code есть переданный пользователем код (колонка code) и что значение is_activated = false. <br>
+        2.3.Если пользователь найден, и значение amount_left > 0, то необходимо уменьшить значение amount_left на 1 и перейти на шаг 3. <br>
+        3.  Необходимо проверить что в БД есть переданный пользователем код (поле code) и что он не был использован ранее <br>
+        3.1. Код есть, но был использован ранее ИЛИ кода нет, то вернуть ответ со status_code 200  { "is_code_verified": false, "attempts": N,"text": "Осталось N попытки", "next_try": "2024-04-07T07:51:15+00:00"}<br>
+        3.2. Код есть и не был использован ранее, то необходимо записать в таблицу invite_code в колонку is_activated = true, а в поле activation_date текущую дату. <br>
+        4. Необходимо проверить наличие активного токена доступа (хранится в оперативной памяти) администратора для обновления данных пользователя у сервера авторизации
+        4.1. Если токен доступа администратора не протух, то перейти на шаг 5  <br>
+        4.2. Если токен доступа администратора протух необходимо получить новый токен POST /auth/realms/{realm_name}/protocol/openid-connect/token и перейти на шаг 5 <br>
+        5. Необходимо отправить запрос со всеми имеющимеся аттрибутами указанными в PUT /auth/admin/realms/{realm_name}/users/{user_id}, которые есть вернулись в методе introspect (user_id - значение поля sub) передав информацию о активности подписки и её сроки (если заполнено поле subscription_period_in_days, то передаём дату окончания подписки, которая равна subscription_period_in_days + текущая дата)<br>
+        5. Вернуть ответ <br>
       '
       parameters:
         - in: header
@@ -427,7 +471,6 @@ paths:
                   nullable: false
                   example: true
               required:
-                - access_token
                 - invite_code
       responses:
         '200':
