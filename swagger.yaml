@@ -337,7 +337,7 @@ paths:
                         format: datetime
                         nullable: true
                         example: '2024-04-07T07:51:15+00:00'
-  /invite-code/{code}:
+  /invite-code:
     post:
       tags:
         - backend
@@ -372,12 +372,19 @@ paths:
             type: string
           required: true
           example: Bearer ${access token}
-        - in: path
-          name: code
-          schema:
-            type: string
-          required: true
-          example: ${access token}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+               code:
+                  type: string
+                  description: Код приглашение выданный пользователю
+                  nullable: false
+                  example: '12199472'
+              required:
+                - code
       responses:
         '200':
           description: Successful operation
@@ -443,50 +450,11 @@ paths:
                 example: null
       security:
         - auth_token: [] 
-  /user-data:
-    put:
-      tags:
-        - backend
-      summary: Создать/обновить данные пользователя
-      description: '
-        TBD
-      '
-      parameters:
-        - in: header
-          name: Authorization
-          description: Токен доступа пользователя
-          schema:
-            type: string
-          required: true
-          example: Bearer ${access token}
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                accepted_no_medical_liablility:
-                  type: boolean
-                  description: Согласие об отсутствии медицинской ответственности принятно
-                  nullable: false
-                  example: true
-              required:
-                - invite_code
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                example: null
-      security:
-        - auth_token: [] 
   /parent-playlist:
     post:
       tags:
         - backend
-      summary: Получить родительский playlist
+      summary: Получить родительский playlist ****(???????)****
       description: 'TBD'
       parameters:
         - in: header
@@ -549,7 +517,7 @@ paths:
     get:
       tags:
         - backend
-      summary: Получить дочерний playlist (определенного качества)
+      summary: Получить дочерний playlist ****(???????)****
       description: 'TBD'
       parameters:
         - in: header
@@ -600,6 +568,53 @@ paths:
                 $ref: '#/components/schemas/childPlaylistResponse'
       security:
         - auth_token: [] 
+  /user-data:
+    patch:
+      tags:
+        - backend
+      summary: Создать/обновить данные пользователя (НЕ ДЕЛАТЬ СЕЙЧАС)
+      description: '
+        TBD
+      '
+      parameters:
+        - in: header
+          name: Authorization
+          description: Токен доступа пользователя
+          schema:
+            type: string
+          required: true
+          example: Bearer ${access token}
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                age:
+                  type: number
+                  description: Возраст
+                  nullable: true
+                  example: 34
+                weight:
+                  type: number
+                  format: float
+                  nullable: true
+                  example: 73.4
+                gender:
+                  type: string
+                  nullable: true
+                  example: "MALE"
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                example: null
+      security:
+        - auth_token: [] 
+
 components:
   schemas:
     childPlaylistResponse:
@@ -648,4 +663,4 @@ components:
       in: header
 security:
   - x_api_key: []
-    
+  
