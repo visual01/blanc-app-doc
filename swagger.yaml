@@ -367,10 +367,10 @@ paths:
       parameters:
         - in: header
           name: Authorization
-          description: Токен доступа пользователя
+          description: Токен доступа пользователя. Так как отправка кода будет до того как пользователь авторизован, то необходимо первый вызов метода делать без заголовка authorization, а второй с ним, чтобы привязать код-приглашения к пользователю.
           schema:
             type: string
-          required: true
+          required: false
           example: Bearer ${access token}
       requestBody:
         content:
@@ -411,50 +411,11 @@ paths:
                   - text
       security:
         - auth_token: [] 
-  /medical-liability-confirmation:
-    post:
-      tags:
-        - backend
-      summary: Принятие согласия об отсутствии медицинской ответственности
-      description: '
-        TBD
-      '
-      parameters:
-        - in: header
-          name: Authorization
-          description: Токен доступа пользователя
-          schema:
-            type: string
-          required: true
-          example: Bearer ${access token}
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-               accepted_medical_liablility:
-                  type: boolean
-                  description: Согласие об отсутствии медицинской ответственности принятно
-                  nullable: false
-                  example: true
-              required:
-                - accepted_medical_liablility
-      responses:
-        '200':
-          description: Successful operation
-          content:
-            application/json:
-              schema:
-                type: object
-                example: null
-      security:
-        - auth_token: [] 
   /parent-playlist:
     post:
       tags:
         - backend
-      summary: Получить родительский playlist ****(???????)****
+      summary: Получить m3u8 playlist (HLS)
       description: 'TBD'
       parameters:
         - in: header
@@ -513,11 +474,11 @@ paths:
                  $ref: '#/components/schemas/parentPlayListResponse'
       security:
         - auth_token: [] 
-  /child-playlist:
+  /training-data:
     get:
       tags:
         - backend
-      summary: Получить дочерний playlist ****(???????)****
+      summary: Получить данные для тренировки
       description: 'TBD'
       parameters:
         - in: header
@@ -526,53 +487,20 @@ paths:
             type: string
           required: true
           example: Bearer ${access token}
-        - in: query
-          name: q
-          description: качество видео
-          schema:
-            type: number
-            format: integer
-            enum:
-              - 360
-              - 480
-              - 720
-              - 1080
-          required: true
-        - in: query
-          name: type
-          description: тип содержимого плейлиста
-          schema:
-            type: string
-            enum:
-              - VIDEO
-              - AUDIO
-          required: true
-        - in: query
-          name: content
-          description: идентификаторы записей
-          schema:
-            type: array
-            items:
-              type: number
-              format: integer
-          required: true
       responses:
         '200':
           description: Successful operation
           content:
-            application/vnd.apple.mpegurl:
+            application/json:
               schema:
-                $ref: '#/components/schemas/childPlaylistResponse'
-            audio/mpegurl:
-              schema:
-                $ref: '#/components/schemas/childPlaylistResponse'
+                $ref: '#/components/schemas/trainingDataResponse'
       security:
         - auth_token: [] 
   /user-data:
     patch:
       tags:
         - backend
-      summary: Создать/обновить данные пользователя (НЕ ДЕЛАТЬ СЕЙЧАС)
+      summary: Обновить данные пользователя (имя, возраст, вес, отказ от мед ответственности)
       description: '
         TBD
       '
@@ -604,6 +532,10 @@ paths:
                   type: string
                   nullable: true
                   example: "MALE"
+                no_medical_responsibility_confirmation:
+                  type: boolean
+                  nullable: false
+                  example: true
       responses:
         '200':
           description: Successful operation
@@ -617,6 +549,160 @@ paths:
 
 components:
   schemas:
+    trainingDataResponse:
+      type: object
+      properties:
+        training:
+          type: object
+          properties:
+            displayName:
+              type: string
+              example: "Вид тренировки"
+              description: Название отображаемое пользователю
+            order:
+              type: integer
+              example: 1
+              description: Порядок отображения (слево-направо, сверху-вниз)
+            values:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 1
+                  displayName:
+                    type: string
+                    example: "Сжигание жира"
+                  description:
+                    type: string
+                    example: "Короче, если хочешь стать стройнее, то это твой БРО"
+                  order:
+                    type: integer
+                    example: 1
+                  time:
+                    type: object
+                    properties:
+                      minValue:
+                        type: number
+                        format: integer
+                        example: 30
+                        description: Минимальное время тренировки в минутах
+                      maxValue:
+                        type: number
+                        format: integer
+                        example: 60
+                        description: Максимаьное время тренировки в минутах
+                      step:
+                        type: number
+                        format: integer
+                        example: 1
+                        description: Шаг изменения времени между минимальным и максимальным в минутах
+        complexity:
+          type: object
+          properties:
+            displayName:
+              type: string
+              example: Сложность
+            order:
+              type: integer
+              example: 2
+            values:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 1
+                  displayName:
+                    type: string
+                    example: "Слабая"
+                  description:
+                    type: string
+                    example: ""
+                  order:
+                    type: integer
+                    example: 1
+        trainer:
+          type: object
+          properties:
+            displayName:
+              type: string
+              example: Тренер
+            order:
+              type: integer
+              example: 4
+            values:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 1
+                  displayName:
+                    type: string
+                    example: "Сергей"
+                  description:
+                    type: string
+                    example: "Спец по качанию"
+                  order:
+                    type: integer
+                    example: 1
+        explanation:
+          type: object
+          properties:
+            displayName:
+              type: string
+              example: Пояснение
+            order:
+              type: integer
+              example: 5
+            values:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 1
+                  displayName:
+                    type: string
+                    example: "Подробно чтобы прям ппц"
+                  description:
+                    type: string
+                    example: "Мы расскажем какая мышца может заболеть"
+                  order:
+                    type: integer
+                    example: 1
+        muscleExclude:
+          type: object
+          properties:
+            displayName:
+              type: string
+              example: Пояснение
+            order:
+              type: integer
+              example: 6
+            values:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: number
+                    example: 1
+                  displayName:
+                    type: string
+                    example: "Мышцы спины"
+                  description:
+                    type: string
+                    example: "тут описание, а может и нет"
+                  order:
+                    type: integer
+                    example: 1
+
     childPlaylistResponse:
       type: string
       description: Содержит ссылки на сегменты в s3 хранилище
@@ -663,4 +749,3 @@ components:
       in: header
 security:
   - x_api_key: []
-  
